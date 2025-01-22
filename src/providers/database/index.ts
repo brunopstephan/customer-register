@@ -1,3 +1,5 @@
-import { DynamoDB } from "@aws-sdk/client-dynamodb"; 
+import { DynamoDB } from '@aws-sdk/client-dynamodb'
 
-export const dynamoClient = new DynamoDB()
+export const dynamoClient = new DynamoDB({
+  endpoint: 'http://localhost:8000',
+})

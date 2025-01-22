@@ -1,0 +1,8 @@
+services:
+  dynamo:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./.docker/dynamodb:/data
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /data"

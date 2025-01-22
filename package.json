@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsup src && sam build",
     "start": "sam local start-api",
+    "build": "tsup src && sam build",
+    "build-start": "yarn build && yarn start",
     "deploy": "sam deploy",
-    "deploy-guided": "sam deploy --guided"
+    "deploy-guided": "sam deploy --guided",
+    "lint": "eslint --ext .ts src --fix"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +19,10 @@
     "@aws-sdk/util-dynamodb": "^3.731.1"
   },
   "devDependencies": {
+    "@rocketseat/eslint-config": "^2.2.2",
     "@types/aws-lambda": "^8.10.147",
+    "@types/node": "^22.10.7",
+    "eslint": "^8.57.1",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3"
   }
