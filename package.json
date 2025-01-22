@@ -1,0 +1,24 @@
+{
+  "name": "aws-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsup src && sam build",
+    "start": "sam local start-api",
+    "deploy": "sam deploy",
+    "deploy-guided": "sam deploy --guided"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.731.1",
+    "@aws-sdk/util-dynamodb": "^3.731.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3"
+  }
+}
