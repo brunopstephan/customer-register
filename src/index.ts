@@ -6,6 +6,13 @@ import { Customer } from './schemas'
 import { CustomersService } from './services'
 
 export const handler = async (event: APIGatewayProxyEvent) => {
+  if (event.path.split('/')[1] !== 'customers') {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({ message: 'Not Found' }),
+    }
+  }
+
   const customerRepository = new CustomerRepository(dynamoClient)
   const customersService = new CustomersService(customerRepository)
 

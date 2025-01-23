@@ -12,6 +12,7 @@ Resources:
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
+        - ApiGatewayMethodList
         - ApiGatewayMethodGet
         - ApiGatewayMethodPost
     Properties:
@@ -66,17 +67,17 @@ Resources:
                   - dynamodb:GetItem
                 Resource: !GetAtt Customers.Arn
 
-  ApiGatewayCustomerResource:
+  ApiGatewayCustomersResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ApiGateway.RootResourceId
-      PathPart: customer
+      PathPart: customers
       RestApiId: !Ref ApiGateway
 
-  ApiGatewayCustomerWithIdResource:
+  ApiGatewayCustomersWithIdResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !Ref ApiGatewayCustomerResource
+      ParentId: !Ref ApiGatewayCustomersResource
       PathPart: "{customerId}" 
       RestApiId: !Ref ApiGateway
 
@@ -85,7 +86,7 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: GET
-      ResourceId: !Ref ApiGatewayCustomerResource  
+      ResourceId: !Ref ApiGatewayCustomersResource  
       RestApiId: !Ref ApiGateway
       Integration:
         IntegrationHttpMethod: POST
@@ -100,7 +101,7 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: GET
-      ResourceId: !Ref ApiGatewayCustomerWithIdResource  
+      ResourceId: !Ref ApiGatewayCustomersWithIdResource  
       RestApiId: !Ref ApiGateway
       Integration:
         IntegrationHttpMethod: POST
@@ -116,7 +117,7 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: POST
-      ResourceId: !Ref ApiGatewayCustomerResource  
+      ResourceId: !Ref ApiGatewayCustomersResource  
       RestApiId: !Ref ApiGateway
       Integration:
         IntegrationHttpMethod: POST
