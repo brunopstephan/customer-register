@@ -58,6 +58,19 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     return await customersService.updateBasicData(customerId, body)
   }
 
+  if (event.httpMethod === 'DELETE') {
+    const customerId = event.pathParameters?.customerId
+
+    if (!customerId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Bad Request' }),
+      }
+    }
+
+    return await customersService.delete(customerId)
+  }
+
   return {
     statusCode: 400,
     body: JSON.stringify({ message: 'Bad Request' }),

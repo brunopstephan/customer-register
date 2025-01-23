@@ -51,11 +51,13 @@ export class CustomerRepository implements CustomerContract {
       .then((data) => unmarshall(data.Attributes) as Customer)
   }
 
-  delete(params: CustomerEntity['delete']): void {
-    this.dbClient.deleteItem({
-      TableName: TABLE_NAME,
-      Key: marshall({ customerId: params.id }),
-    })
+  async delete(params: CustomerEntity['delete']): Promise<null> {
+    return this.dbClient
+      .deleteItem({
+        TableName: TABLE_NAME,
+        Key: marshall({ customerId: params.id }),
+      })
+      .then(() => null)
   }
 
   async scan(): Promise<Customer[]> {

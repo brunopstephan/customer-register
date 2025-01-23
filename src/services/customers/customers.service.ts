@@ -104,4 +104,25 @@ export class CustomersService {
       body: JSON.stringify(customers),
     }
   }
+
+  async delete(customerId: string): Promise<APIGatewayProxyStructuredResultV2> {
+    const customer = await this.customerRespository.get({
+      id: customerId,
+    })
+
+    if (!customer) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Customer not found' }),
+      }
+    }
+
+    await this.customerRespository.delete({
+      id: customerId,
+    })
+
+    return {
+      statusCode: 204,
+    }
+  }
 }
