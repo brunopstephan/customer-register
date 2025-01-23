@@ -16,9 +16,10 @@ export class CustomerRepository implements CustomerContract {
     return this.dbClient
       .getItem({
         TableName: TABLE_NAME,
-        Key: marshall({ id: params.id }),
+        Key: marshall({ customerId: params.id }),
       })
       .then(({ Item }) => unmarshall(Item) as Customer)
+      .catch(() => null)
   }
 
   async create(params: CustomerEntity['create']): Promise<Customer> {
@@ -26,17 +27,16 @@ export class CustomerRepository implements CustomerContract {
       .putItem({
         TableName: TABLE_NAME,
         Item: marshall(params.data),
-        ReturnValues: 'ALL_NEW',
       })
-      .then((data) => unmarshall(data.Attributes) as Customer)
+      .then(() => params.data)
   }
 
   async update(params: CustomerEntity['update']): Promise<Customer> {
     return this.dbClient
       .updateItem({
         TableName: TABLE_NAME,
-        Key: marshall({ id: params.id }),
-        ReturnValues: 'UPDATED_NEW',
+        Key: marshall({ customerId: params.id }),
+        ReturnValues: 'ALL_NEW',
       })
       .then((data) => unmarshall(data.Attributes) as Customer)
   }
@@ -44,7 +44,7 @@ export class CustomerRepository implements CustomerContract {
   delete(params: CustomerEntity['delete']): void {
     this.dbClient.deleteItem({
       TableName: TABLE_NAME,
-      Key: marshall({ id: params.id }),
+      Key: marshall({ customerId: params.id }),
     })
   }
 

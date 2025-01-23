@@ -1,12 +1,12 @@
-Transform: AWS::Serverless-2016-10-31
+# Transform: AWS::Serverless-2016-10-31
 
 Resources:
 
   ApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: MyApi
-      Description: "My API Gateway"
+      Name: CustomersApi
+      Description: "API for managing customers"
     
 
   ApiGatewayDeployment:
@@ -21,6 +21,7 @@ Resources:
   Customers:
     Type: AWS::DynamoDB::Table
     Properties:
+      TableName: "Customers"
       AttributeDefinitions:
         - AttributeName: customerId
           AttributeType: S
@@ -39,7 +40,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
         Variables:
-          TABLE_NAME: !Ref Customers
+          TABLE_NAME: "Customers"
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -72,7 +73,14 @@ Resources:
       PathPart: customer
       RestApiId: !Ref ApiGateway
 
-  ApiGatewayMethodGet:
+  ApiGatewayCustomerWithIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ApiGatewayCustomerResource
+      PathPart: "{customerId}" 
+      RestApiId: !Ref ApiGateway
+
+  ApiGatewayMethodList:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
@@ -86,6 +94,22 @@ Resources:
           !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
       MethodResponses:
         - StatusCode: 200
+
+  ApiGatewayMethodGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId: !Ref ApiGatewayCustomerWithIdResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 200
+        - StatusCode: 404
 
   ApiGatewayMethodPost:
     Type: AWS::ApiGateway::Method
@@ -101,6 +125,7 @@ Resources:
           !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
       MethodResponses:
         - StatusCode: 201
+        - StatusCode: 400
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission

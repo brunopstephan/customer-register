@@ -10,6 +10,7 @@
     "deploy-guided": "sam deploy --guided",
     "lint": "eslint --ext .ts src --fix"
   },
+  "files": [ "/dist" ],
   "keywords": [],
   "author": "",
   "license": "ISC",
