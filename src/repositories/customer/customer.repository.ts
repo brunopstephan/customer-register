@@ -31,11 +31,21 @@ export class CustomerRepository implements CustomerContract {
       .then(() => params.data)
   }
 
-  async update(params: CustomerEntity['update']): Promise<Customer> {
+  async update({ data, id }: CustomerEntity['update']): Promise<Customer> {
+    const keys = Object.keys(data)
+
     return this.dbClient
       .updateItem({
         TableName: TABLE_NAME,
-        Key: marshall({ customerId: params.id }),
+        Key: marshall({ customerId: id }),
+        UpdateExpression: `SET ${keys.map((key) => `#${key} = :${key}`).join(', ')}`,
+        ExpressionAttributeNames: keys.reduce((acc, key) => {
+          acc[`#${key}`] = key
+          return acc
+        }, {}),
+        ExpressionAttributeValues: marshall(
+          Object.fromEntries(keys.map((key) => [`:${key}`, data[key]])),
+        ),
         ReturnValues: 'ALL_NEW',
       })
       .then((data) => unmarshall(data.Attributes) as Customer)

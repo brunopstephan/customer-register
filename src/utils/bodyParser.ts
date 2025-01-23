@@ -3,19 +3,20 @@ import { Customer } from '@/schemas'
 const validateSimpleField = (
   field: Partial<Omit<Customer, 'addresses' | 'contacts'>>,
   type: string,
+  isBasicDataUpdate: boolean,
 ) => {
   const [key, value] = Object.entries(field)[0]
   const isFieldPresent = value !== undefined
   // eslint-disable-next-line valid-typeof
   const isFieldCorrectType = typeof value === type
 
-  if (!isFieldPresent) {
+  if (!isFieldPresent && !isBasicDataUpdate) {
     return {
       error: `${key} is required`,
     }
   }
 
-  if (!isFieldCorrectType) {
+  if (!isFieldCorrectType && isFieldPresent) {
     return {
       error: `${key} must be of type ${type}`,
     }
@@ -26,7 +27,12 @@ const validateSimpleField = (
   }
 }
 
-const validateContacts = (contacts: Customer['contacts']) => {
+export const validateContacts = (
+  contacts: Customer['contacts'],
+  isBasicDataUpdate?: boolean,
+) => {
+  if (isBasicDataUpdate) return { error: null }
+
   const isContactsPresent = contacts !== undefined
   const isContactsArray = Array.isArray(contacts)
   const isContactsNotEmpty = contacts?.length > 0
@@ -75,7 +81,12 @@ const validateContacts = (contacts: Customer['contacts']) => {
   }
 }
 
-const validateAddresses = (addresses: Customer['addresses']) => {
+const validateAddresses = (
+  addresses: Customer['addresses'],
+  isBasicDataUpdate: boolean,
+) => {
+  if (isBasicDataUpdate) return { error: null }
+
   const isAddressPresent = addresses !== undefined
   const isAddressArray = Array.isArray(addresses)
   const isAddressNotEmpty = addresses?.length > 0
@@ -112,18 +123,30 @@ const validateAddresses = (addresses: Customer['addresses']) => {
   }
 }
 
-export function bodyParser(body: Customer) {
-  const active = validateSimpleField({ active: body.active }, 'boolean')
+export function bodyParser(body: Customer, isBasicDataUpdate = false) {
+  const active = validateSimpleField(
+    { active: body.active },
+    'boolean',
+    isBasicDataUpdate,
+  )
 
-  const fullname = validateSimpleField({ fullName: body.fullName }, 'string')
+  const fullName = validateSimpleField(
+    { fullName: body.fullName },
+    'string',
+    isBasicDataUpdate,
+  )
 
-  const birthDate = validateSimpleField({ birthDate: body.birthDate }, 'string')
+  const birthDate = validateSimpleField(
+    { birthDate: body.birthDate },
+    'string',
+    isBasicDataUpdate,
+  )
 
-  const contacts = validateContacts(body.contacts)
+  const contacts = validateContacts(body.contacts, isBasicDataUpdate)
 
-  const addresses = validateAddresses(body.addresses)
+  const addresses = validateAddresses(body.addresses, isBasicDataUpdate)
 
-  const validations = [active, fullname, birthDate, contacts, addresses]
+  const validations = [active, fullName, birthDate, contacts, addresses]
 
   const withErrors = validations.filter((validation) => validation.error)
 
@@ -137,5 +160,12 @@ export function bodyParser(body: Customer) {
   return {
     success: true,
     errors: [],
+    data: {
+      fullName: body.fullName,
+      active: body.active,
+      birthDate: body.birthDate,
+      contacts: body.contacts,
+      addresses: body.addresses,
+    },
   }
 }

@@ -1,8 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import { CustomerRepository } from './repositories'
 import { dynamoClient } from './providers'
-import { bodyParser } from './utils'
-import { Customer } from './schemas'
 import { CustomersService } from './services'
 
 export const handler = async (event: APIGatewayProxyEvent) => {
@@ -20,27 +18,10 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     const customerId = event.pathParameters?.customerId
 
     if (!customerId) {
-      const customers = await customersService.list()
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify(customers),
-      }
+      return await customersService.list()
     }
 
-    const customer = await customersService.get(customerId)
-
-    if (!customer) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Customer not found' }),
-      }
-    }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(customer),
-    }
+    return await customersService.get(customerId)
   }
 
   if (event.httpMethod === 'POST') {
@@ -50,30 +31,31 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         body: JSON.stringify({ message: 'Body must not be empty' }),
       }
     }
-
     const body = JSON.parse(event.body)
 
-    const { errors, success } = bodyParser(body)
+    return await customersService.create(body)
+  }
 
-    if (!success) {
+  if (event.httpMethod === 'PUT') {
+    const customerId = event.pathParameters?.customerId
+
+    if (!customerId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({
-          message: 'Validation Error',
-          errors,
-        }),
+        body: JSON.stringify({ message: 'Bad Request' }),
       }
     }
 
-    const created = await customersService.create(body as Customer)
-
-    return {
-      statusCode: 201,
-      body: JSON.stringify({
-        message: 'Created!',
-        data: created,
-      }),
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Body must not be empty' }),
+      }
     }
+
+    const body = JSON.parse(event.body)
+
+    return await customersService.updateBasicData(customerId, body)
   }
 
   return {

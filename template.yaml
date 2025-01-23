@@ -15,6 +15,8 @@ Resources:
         - ApiGatewayMethodList
         - ApiGatewayMethodGet
         - ApiGatewayMethodPost
+        - ApiGatewayMethodDelete
+        - ApiGatewayMethodPut
     Properties:
       RestApiId: !Ref ApiGateway
       StageName: dev
@@ -111,6 +113,7 @@ Resources:
       MethodResponses:
         - StatusCode: 200
         - StatusCode: 404
+        - StatusCode: 400
 
   ApiGatewayMethodPost:
     Type: AWS::ApiGateway::Method
@@ -127,6 +130,40 @@ Resources:
       MethodResponses:
         - StatusCode: 201
         - StatusCode: 400
+
+  ApiGatewayMethodPut:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: PUT
+      ResourceId: !Ref ApiGatewayCustomersWithIdResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
+  
+  ApiGatewayMethodDelete:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      ResourceId: !Ref ApiGatewayCustomersWithIdResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
