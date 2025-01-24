@@ -106,6 +106,20 @@ Resources:
       PathPart: "{contactId}" 
       RestApiId: !Ref ApiGateway
 
+  ApiGatewayCustomersWithAddressesResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ApiGatewayCustomersWithIdResource
+      PathPart: "addresses" 
+      RestApiId: !Ref ApiGateway
+
+  ApiGatewayCustomersWithAddessIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ApiGatewayCustomersWithAddressesResource
+      PathPart: "{addressId}" 
+      RestApiId: !Ref ApiGateway
+
   CustomersList:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -239,6 +253,56 @@ Resources:
         - StatusCode: 400
         - StatusCode: 404
 
+  CustomersAddressesPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref ApiGatewayCustomersWithAddressesResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
+
+  CustomersAddressesPut:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: PUT
+      ResourceId: !Ref ApiGatewayCustomersWithAddessIdResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
+
+  CustomersAddressesDelete:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      ResourceId: !Ref ApiGatewayCustomersWithAddessIdResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission

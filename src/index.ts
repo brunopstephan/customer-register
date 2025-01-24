@@ -40,6 +40,13 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       )
     }
 
+    if (event.pathParameters?.customerId && event.path.includes('addresses')) {
+      return await customersService.createAddress(
+        event.pathParameters?.customerId,
+        body,
+      )
+    }
+
     return await customersService.create(body)
   }
 
@@ -75,6 +82,19 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       return await customersService.updateContact(customerId, contactId, body)
     }
 
+    if (event.path.includes('addresses')) {
+      const addressId = event.pathParameters?.addressId
+
+      if (!addressId) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: 'addressId not provided' }),
+        }
+      }
+
+      return await customersService.updateAddress(customerId, addressId, body)
+    }
+
     return await customersService.updateBasicData(customerId, body)
   }
 
@@ -99,6 +119,19 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       }
 
       return await customersService.deleteContact(customerId, contactId)
+    }
+
+    if (event.path.includes('addresses')) {
+      const addressId = event.pathParameters?.addressId
+
+      if (!addressId) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: 'addressId not provided' }),
+        }
+      }
+
+      return await customersService.deleteAddress(customerId, addressId)
     }
 
     return await customersService.delete(customerId)

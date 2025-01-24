@@ -1,6 +1,7 @@
 import { CustomerContract } from '@/repositories'
-import { Contact, Customer } from '@/schemas'
+import { Address, Contact, Customer } from '@/schemas'
 import { bodyParser } from '@/utils'
+import { validateAddresses } from '@/utils/validateAddresses'
 import { validateContacts } from '@/utils/validateContacts'
 import { APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
 import { randomUUID } from 'node:crypto'
@@ -140,16 +141,6 @@ export class CustomersService {
   }
 
   async createContact(customerId: string, body: Contact) {
-    const customer = await this.customerRespository.get({
-      id: customerId,
-    })
-
-    if (!customer) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Customer not found' }),
-      }
-    }
     const { error } = validateContacts([body], { ignoreMain: true })
 
     if (error) {
@@ -162,7 +153,20 @@ export class CustomersService {
       }
     }
 
-    const contact = { ...body, id: randomUUID() }
+    const customer = await this.customerRespository.get({
+      id: customerId,
+    })
+
+    if (!customer) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Customer not found' }),
+      }
+    }
+
+    const { email, main, phone } = body
+
+    const contact = { email, main, phone, id: randomUUID() } as Contact
 
     if (contact.main) {
       customer.contacts = customer.contacts.map((contact) => ({
@@ -185,6 +189,18 @@ export class CustomersService {
   }
 
   async updateContact(customerId: string, contactId: string, body: Contact) {
+    const { error } = validateContacts([body], { ignoreMain: true })
+
+    if (error) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: 'Validation Error',
+          errors: [error],
+        }),
+      }
+    }
+
     const customer = await this.customerRespository.get({
       id: customerId,
     })
@@ -207,26 +223,16 @@ export class CustomersService {
       }
     }
 
-    const { error } = validateContacts([body], { ignoreMain: true })
-
-    if (error) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          message: 'Validation Error',
-          errors: [error],
-        }),
-      }
-    }
-
     if (body.main) {
       customer.contacts.forEach((contact) => {
         contact.main = false
       })
     }
 
+    const { email, main, phone } = body
+
     const updatedContacts = customer.contacts.map((contact) =>
-      contact.id === contactId ? { ...contact, ...body } : contact,
+      contact.id === contactId ? { ...contact, email, main, phone } : contact,
     )
 
     if (updatedContacts.every((contact) => !contact.main))
@@ -289,6 +295,141 @@ export class CustomersService {
       id: customerId,
       data: {
         contacts: updatedContacts,
+      },
+    })
+
+    return {
+      statusCode: 204,
+      body: JSON.stringify(updated),
+    }
+  }
+
+  async createAddress(customerId: string, body: Address) {
+    const { error } = validateAddresses([body])
+
+    if (error) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: 'Validation Error',
+          errors: [error],
+        }),
+      }
+    }
+
+    const customer = await this.customerRespository.get({
+      id: customerId,
+    })
+
+    if (!customer) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Customer not found' }),
+      }
+    }
+
+    const { line } = body
+
+    const address = { line, id: randomUUID() }
+
+    const updated = await this.customerRespository.update({
+      id: customerId,
+      data: {
+        addresses: [...customer.addresses, address],
+      },
+    })
+
+    return {
+      statusCode: 201,
+      body: JSON.stringify(updated),
+    }
+  }
+
+  async updateAddress(customerId: string, addressId: string, body: Address) {
+    const { error } = validateAddresses([body])
+
+    if (error) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          message: 'Validation Error',
+          errors: [error],
+        }),
+      }
+    }
+
+    const customer = await this.customerRespository.get({
+      id: customerId,
+    })
+
+    if (!customer) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Customer not found' }),
+      }
+    }
+
+    const address = customer.addresses.find(
+      (address) => address.id === addressId,
+    )
+
+    if (!address) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Address not found' }),
+      }
+    }
+
+    const { line } = body
+
+    const updatedAddresses = customer.addresses.map((address) =>
+      address.id === addressId ? { ...address, line } : address,
+    )
+
+    const updated = await this.customerRespository.update({
+      id: customerId,
+      data: {
+        addresses: updatedAddresses,
+      },
+    })
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(updated),
+    }
+  }
+
+  async deleteAddress(customerId: string, addressId: string) {
+    const customer = await this.customerRespository.get({
+      id: customerId,
+    })
+
+    if (!customer) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Customer not found' }),
+      }
+    }
+
+    const address = customer.addresses.find(
+      (address) => address.id === addressId,
+    )
+
+    if (!address) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Address not found' }),
+      }
+    }
+
+    const updatedAddresses = customer.addresses.filter(
+      (address) => address.id !== addressId,
+    )
+
+    const updated = await this.customerRespository.update({
+      id: customerId,
+      data: {
+        addresses: updatedAddresses,
       },
     })
 
