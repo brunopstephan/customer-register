@@ -28,6 +28,9 @@ Resources:
       Handler: dist/index.handler
       Runtime: nodejs18.x
       Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: customers-crud-code
+        S3Key: customers-crud-code.zip
       Environment:
         Variables:
           TABLE_NAME: "Customers"
