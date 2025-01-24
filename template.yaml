@@ -2,25 +2,7 @@
 
 Resources:
 
-  ApiGateway:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: CustomersApi
-      Description: "API for managing customers"
-    
-
-  ApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn:
-        - ApiGatewayMethodList
-        - ApiGatewayMethodGet
-        - ApiGatewayMethodPost
-        - ApiGatewayMethodDelete
-        - ApiGatewayMethodPut
-    Properties:
-      RestApiId: !Ref ApiGateway
-      StageName: dev
-
+#region DynamoDB
   Customers:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -35,6 +17,11 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
+
+ 
+#endregion
+
+#region Lambda
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -69,6 +56,28 @@ Resources:
                   - dynamodb:GetItem
                 Resource: !GetAtt Customers.Arn
 
+#endregion
+
+#region ApiGateway
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: CustomersApi
+      Description: "API for managing customers"
+    
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+        - CustomersList
+        - CustomersGet
+        - CustomersPost
+        - CustomersDelete
+        - CustomersPut
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: dev
+
   ApiGatewayCustomersResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -83,7 +92,21 @@ Resources:
       PathPart: "{customerId}" 
       RestApiId: !Ref ApiGateway
 
-  ApiGatewayMethodList:
+  ApiGatewayCustomersWithContactsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ApiGatewayCustomersWithIdResource
+      PathPart: "contacts" 
+      RestApiId: !Ref ApiGateway
+
+  ApiGatewayCustomersWithContactIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ApiGatewayCustomersWithContactsResource
+      PathPart: "{contactId}" 
+      RestApiId: !Ref ApiGateway
+
+  CustomersList:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
@@ -98,7 +121,7 @@ Resources:
       MethodResponses:
         - StatusCode: 200
 
-  ApiGatewayMethodGet:
+  CustomersGet:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
@@ -115,7 +138,7 @@ Resources:
         - StatusCode: 404
         - StatusCode: 400
 
-  ApiGatewayMethodPost:
+  CustomersPost:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
@@ -131,7 +154,7 @@ Resources:
         - StatusCode: 201
         - StatusCode: 400
 
-  ApiGatewayMethodPut:
+  CustomersPut:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
@@ -148,7 +171,7 @@ Resources:
         - StatusCode: 400
         - StatusCode: 404
   
-  ApiGatewayMethodDelete:
+  CustomersDelete:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
@@ -165,9 +188,62 @@ Resources:
         - StatusCode: 400
         - StatusCode: 404
 
+  CustomersContactsPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref ApiGatewayCustomersWithContactsResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
+
+  CustomersContactsPut:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: PUT
+      ResourceId: !Ref ApiGatewayCustomersWithContactIdResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
+
+  CustomersContactsDelete:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      ResourceId: !Ref ApiGatewayCustomersWithContactIdResource  
+      RestApiId: !Ref ApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 201
+        - StatusCode: 400
+        - StatusCode: 404
+
+
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref LambdaFunction
       Principal: apigateway.amazonaws.com
+#endregion

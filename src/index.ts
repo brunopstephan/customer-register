@@ -33,6 +33,13 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     }
     const body = JSON.parse(event.body)
 
+    if (event.pathParameters?.customerId && event.path.includes('contacts')) {
+      return await customersService.createContact(
+        event.pathParameters?.customerId,
+        body,
+      )
+    }
+
     return await customersService.create(body)
   }
 
@@ -42,7 +49,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     if (!customerId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'Bad Request' }),
+        body: JSON.stringify({ message: 'customerId not provided' }),
       }
     }
 
@@ -55,6 +62,19 @@ export const handler = async (event: APIGatewayProxyEvent) => {
 
     const body = JSON.parse(event.body)
 
+    if (event.path.includes('contacts')) {
+      const contactId = event.pathParameters?.contactId
+
+      if (!contactId) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: 'contactId not provided' }),
+        }
+      }
+
+      return await customersService.updateContact(customerId, contactId, body)
+    }
+
     return await customersService.updateBasicData(customerId, body)
   }
 
@@ -64,8 +84,21 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     if (!customerId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: 'Bad Request' }),
+        body: JSON.stringify({ message: 'customerId not provided' }),
       }
+    }
+
+    if (event.path.includes('contacts')) {
+      const contactId = event.pathParameters?.contactId
+
+      if (!contactId) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: 'contactId not provided' }),
+        }
+      }
+
+      return await customersService.deleteContact(customerId, contactId)
     }
 
     return await customersService.delete(customerId)

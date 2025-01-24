@@ -1,14 +1,20 @@
 export type Contact = {
+  id: string
   email: string
   phone: string
   main: boolean
 }
 
+export type Address = {
+  id: string
+  line: string
+}
+
 export type Customer = {
   customerId: string
   fullName: string
-  birthDate: string
+  birthdate: string
   active: boolean
-  addresses: string[]
+  addresses: Address[]
   contacts: Contact[]
 }

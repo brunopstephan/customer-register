@@ -1,152 +1,34 @@
 import { Customer } from '@/schemas'
-
-const validateSimpleField = (
-  field: Partial<Omit<Customer, 'addresses' | 'contacts'>>,
-  type: string,
-  isBasicDataUpdate: boolean,
-) => {
-  const [key, value] = Object.entries(field)[0]
-  const isFieldPresent = value !== undefined
-  // eslint-disable-next-line valid-typeof
-  const isFieldCorrectType = typeof value === type
-
-  if (!isFieldPresent && !isBasicDataUpdate) {
-    return {
-      error: `${key} is required`,
-    }
-  }
-
-  if (!isFieldCorrectType && isFieldPresent) {
-    return {
-      error: `${key} must be of type ${type}`,
-    }
-  }
-
-  return {
-    error: null,
-  }
-}
-
-export const validateContacts = (
-  contacts: Customer['contacts'],
-  isBasicDataUpdate?: boolean,
-) => {
-  if (isBasicDataUpdate) return { error: null }
-
-  const isContactsPresent = contacts !== undefined
-  const isContactsArray = Array.isArray(contacts)
-  const isContactsNotEmpty = contacts?.length > 0
-  const isMainContactPresent = contacts?.some(
-    (contact) => contact.main === true,
-  )
-  const isContactsCorrectType = contacts?.every(
-    (contact) =>
-      typeof contact.email === 'string' &&
-      typeof contact.phone === 'string' &&
-      typeof contact.main === 'boolean',
-  )
-
-  if (!isContactsPresent) {
-    return {
-      error: 'contacts is required',
-    }
-  }
-
-  if (!isContactsArray) {
-    return {
-      error: 'contacts must be an array',
-    }
-  }
-
-  if (!isContactsNotEmpty) {
-    return {
-      error: 'contacts must not be empty',
-    }
-  }
-
-  if (!isMainContactPresent) {
-    return {
-      error: 'contacts must have a main contact',
-    }
-  }
-
-  if (!isContactsCorrectType) {
-    return {
-      error: 'contacts must have email, phone and main fields',
-    }
-  }
-
-  return {
-    error: null,
-  }
-}
-
-const validateAddresses = (
-  addresses: Customer['addresses'],
-  isBasicDataUpdate: boolean,
-) => {
-  if (isBasicDataUpdate) return { error: null }
-
-  const isAddressPresent = addresses !== undefined
-  const isAddressArray = Array.isArray(addresses)
-  const isAddressNotEmpty = addresses?.length > 0
-  const isAddressCorrectType = addresses?.every(
-    (address) => typeof address === 'string',
-  )
-
-  if (!isAddressPresent) {
-    return {
-      error: 'addresses is required',
-    }
-  }
-
-  if (!isAddressArray) {
-    return {
-      error: 'addresses must be an array',
-    }
-  }
-
-  if (!isAddressNotEmpty) {
-    return {
-      error: 'addresses must not be empty',
-    }
-  }
-
-  if (!isAddressCorrectType) {
-    return {
-      error: 'addresses must be an array of strings',
-    }
-  }
-
-  return {
-    error: null,
-  }
-}
+import { validateAddresses } from './validateAddresses'
+import { validateContacts } from './validateContacts'
+import { validateSimpleField } from './validateSimpleField'
 
 export function bodyParser(body: Customer, isBasicDataUpdate = false) {
+  const options = { isBasicDataUpdate }
+
   const active = validateSimpleField(
     { active: body.active },
     'boolean',
-    isBasicDataUpdate,
+    options,
   )
 
   const fullName = validateSimpleField(
     { fullName: body.fullName },
     'string',
-    isBasicDataUpdate,
+    options,
   )
 
-  const birthDate = validateSimpleField(
-    { birthDate: body.birthDate },
+  const birthdate = validateSimpleField(
+    { birthdate: body.birthdate },
     'string',
-    isBasicDataUpdate,
+    options,
   )
 
-  const contacts = validateContacts(body.contacts, isBasicDataUpdate)
+  const contacts = validateContacts(body.contacts, options)
 
-  const addresses = validateAddresses(body.addresses, isBasicDataUpdate)
+  const addresses = validateAddresses(body.addresses, options)
 
-  const validations = [active, fullName, birthDate, contacts, addresses]
+  const validations = [active, fullName, birthdate, contacts, addresses]
 
   const withErrors = validations.filter((validation) => validation.error)
 
@@ -163,7 +45,7 @@ export function bodyParser(body: Customer, isBasicDataUpdate = false) {
     data: {
       fullName: body.fullName,
       active: body.active,
-      birthDate: body.birthDate,
+      birthdate: body.birthdate,
       contacts: body.contacts,
       addresses: body.addresses,
     },
