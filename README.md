@@ -4,6 +4,11 @@ A simple and functional customers CRUD builded in Serverless Architecture (AWS L
 
 In this project was not used any production lib instead of `@aws/sdk`.
 
+This project includes:
+- Object-Oriented Programming (OOP);
+- Unit Tests (Jest);
+- Good practices of code and architecture;
+
 ![image](https://github.com/user-attachments/assets/110b86a0-c9af-4241-9e40-94288ef8aa43)
 
 ## Setup
