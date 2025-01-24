@@ -38,7 +38,7 @@ zip -r customers-crud-code.zip dist/
 aws s3 cp customers-crud-code.zip s3://customers-crud-code
 ```
 
-### Running:
+### Deploy:
 
 Using SAM (Serverless Application Model
 ```
