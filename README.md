@@ -50,12 +50,23 @@ Using AWS Cloudformation:
 ```bash
 aws cloudformation create-stack \
   --stack-name customers-crud \
-  --template-body file://template.yml \
+  --template-body file://template.yaml \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
-Running locally (using SAM):
+Or if exist:
 
+```bash
+aws cloudformation update-stack \
+  --stack-name customers-crud \
+  --template-body file://template.yaml \
+  --capabilities CAPABILITY_NAMED_IAM
 ```
+
+
+### Running locally:
+
+```bash
 yarn start
 ```
+
