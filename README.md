@@ -66,6 +66,8 @@ aws cloudformation update-stack \
 
 ### Running locally:
 
+Obs.: To run locally, you'll have to run and configure tha local DynamoDB or create him on AWS.
+
 ```bash
 yarn start
 ```
