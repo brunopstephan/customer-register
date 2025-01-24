@@ -14,7 +14,7 @@ This project includes:
 ## Setup
 
 Requirements:
-- AWS CLI configured with you account.
+- AWS CLI configured with your account.
 
 After cloning the repo, install the dependencies:
 
@@ -54,7 +54,7 @@ aws cloudformation create-stack \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
-Or if exist:
+Or if exists:
 
 ```bash
 aws cloudformation update-stack \
@@ -66,7 +66,7 @@ aws cloudformation update-stack \
 
 ### Running locally:
 
-Obs.: To run locally, you'll have to run and configure tha local DynamoDB or create him on AWS.
+Obs.: To run locally, you'll have to run and configure tha local DynamoDB or create on AWS.
 
 ```bash
 yarn start
