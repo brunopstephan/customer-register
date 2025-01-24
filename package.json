@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "sam local start-api",
-    "build": "yarn test && tsup src && sam build",
-    "build-start": "yarn build && yarn start",
-    "deploy": "sam deploy",
-    "deploy-guided": "sam deploy --guided",
+    "start": "yarn test && sam build --template-file template-local.yaml && sam local start-api",
+    "build": "yarn test && tsup src",
     "lint": "eslint --ext .ts src --fix",
     "test": "jest"
   },
