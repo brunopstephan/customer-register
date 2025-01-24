@@ -11,6 +11,10 @@ export class MockCustomersRepository implements CustomerContract {
           id: '1',
           line: 'test',
         },
+        {
+          id: '2',
+          line: 'test',
+        },
       ],
       birthdate: '2020-01-01',
       contacts: [
