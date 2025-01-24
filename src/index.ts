@@ -1,7 +1,11 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import { CustomerRepository } from './repositories'
 import { dynamoClient } from './providers'
-import { CustomersService } from './services'
+import {
+  CustomerAddressesService,
+  CustomerContactsService,
+  CustomersService,
+} from './services'
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   if (event.path.split('/')[1] !== 'customers') {
@@ -13,6 +17,12 @@ export const handler = async (event: APIGatewayProxyEvent) => {
 
   const customerRepository = new CustomerRepository(dynamoClient)
   const customersService = new CustomersService(customerRepository)
+  const customerContactsService = new CustomerContactsService(
+    customerRepository,
+  )
+  const customerAddressesService = new CustomerAddressesService(
+    customerRepository,
+  )
 
   if (event.httpMethod === 'GET') {
     const customerId = event.pathParameters?.customerId
@@ -34,14 +44,14 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     const body = JSON.parse(event.body)
 
     if (event.pathParameters?.customerId && event.path.includes('contacts')) {
-      return await customersService.createContact(
+      return await customerContactsService.createContact(
         event.pathParameters?.customerId,
         body,
       )
     }
 
     if (event.pathParameters?.customerId && event.path.includes('addresses')) {
-      return await customersService.createAddress(
+      return await customerAddressesService.createAddress(
         event.pathParameters?.customerId,
         body,
       )
@@ -79,7 +89,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         }
       }
 
-      return await customersService.updateContact(customerId, contactId, body)
+      return await customerContactsService.updateContact(
+        customerId,
+        contactId,
+        body,
+      )
     }
 
     if (event.path.includes('addresses')) {
@@ -92,7 +106,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         }
       }
 
-      return await customersService.updateAddress(customerId, addressId, body)
+      return await customerAddressesService.updateAddress(
+        customerId,
+        addressId,
+        body,
+      )
     }
 
     return await customersService.updateBasicData(customerId, body)
@@ -118,7 +136,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         }
       }
 
-      return await customersService.deleteContact(customerId, contactId)
+      return await customerContactsService.deleteContact(customerId, contactId)
     }
 
     if (event.path.includes('addresses')) {
@@ -131,7 +149,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         }
       }
 
-      return await customersService.deleteAddress(customerId, addressId)
+      return await customerAddressesService.deleteAddress(customerId, addressId)
     }
 
     return await customersService.delete(customerId)
