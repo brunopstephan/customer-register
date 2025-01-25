@@ -2,7 +2,7 @@
 
 A simple and functional customers CRUD builded in Serverless Architecture (AWS Lambda, AWS API Gateway and DynamoDB).
 
-In this project was not used any production lib instead of `@aws/sdk`.
+In this project, no production library was used except for `@aws/sdk`.
 
 This project includes:
 - Object-Oriented Programming (OOP);
@@ -66,7 +66,7 @@ aws cloudformation update-stack \
 
 ### Running locally:
 
-Obs.: To run locally, you'll have to run and configure tha local DynamoDB or create on AWS.
+Obs.: To run locally, you'll have to run and configure the local DynamoDB or create on AWS.
 
 ```bash
 yarn start
